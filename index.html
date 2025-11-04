@@ -1,84 +1,73 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signals Planner</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Signals Planner</title>
+
+  <!-- Leaflet (free) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <main class="wrap">
     <header>
-        <h1>🚦 Signals Planner</h1>
-        <p>Your personal map filter for safer, smoother driving.</p>
+      <h1>🚦 Signals Planner</h1>
+      <p class="tagline">Your personal map filter for safer, smoother driving.</p>
     </header>
 
-    <main>
-  <section id="route-form">
-    <h2>Find Safer Routes</h2>
+    <section class="controls">
+      <h2>Find Safer Routes</h2>
+      <div class="row">
+        <label for="start">Start:</label>
+        <input id="start" type="text" placeholder="Enter starting point" />
+      </div>
+      <div class="row">
+        <label for="destination">Destination:</label>
+        <input id="destination" type="text" placeholder="Enter destination" />
+      </div>
 
-<div class="controls">
-  <label>Start Location:</label>
-  <input id="start" placeholder="Enter starting point (or leave blank to use GPS)" />
-  <label>Destination:</label>
-  <input id="destination" placeholder="Enter destination" />
-  <label><input type="checkbox" id="preferlights" /> Prefer traffic lights / avoid 4-way stops</label>
-  <label><input type="checkbox" id="avoidturns" /> Minimize left turns</label>
-  <button id="planBtn">Plan My Route</button>
+      <div class="prefs">
+        <label><input id="preferlights" type="checkbox" checked /> Prefer traffic lights / avoid 4-way stops</label>
+        <label><input id="avoidlefts" type="checkbox" /> Minimize left turns</label>
+      </div>
 
-  <!-- NEW: choose nav app + live navigation -->
-  <div class="nav-app" style="margin-top:10px;">
-    <strong>Open in:</strong>
-    <label><input type="radio" name="navapp" value="auto" checked> Auto</label>
-    <label><input type="radio" name="navapp" value="google"> Google Maps</label>
-    <label><input type="radio" name="navapp" value="apple"> Apple Maps</label>
-    <label><input type="radio" name="navapp" value="waze"> Waze</label>
-    <button id="goBtn">Use my location & open navigation</button>
-  </div>
-</div>
+      <div class="buttons">
+        <button id="planBtn">Plan My Route</button>
+        <button id="openNavBtn" class="secondary">Use my location & open navigation</button>
+      </div>
+    </section>
 
-<div id="output" class="card"></div>
-<div id="favs" class="card">
-  <h3>Favorites</h3>
-  <ul id="favList"></ul>
-</div>
-
-
-    <div class="row inline">
-      <label class="chk">
-        <input type="checkbox" id="preferLights" />
-        Prefer traffic lights / avoid 4-way stops
-      </label>
-      <label class="chk">
-        <input type="checkbox" id="avoidTurns" />
-        Minimize left turns
-      </label>
-    </div>
-
-    <button id="planBtn">Plan My Route</button>
-  </section>
-
-  <section id="results">
-    <h3>Suggested Route</h3>
-    <div id="output">Enter a start and destination, then click “Plan My Route.”</div>
-
-    <div class="actions">
+    <section class="results">
+      <h3>Suggested Route</h3>
+      <div id="output" class="card">Map will appear below…</div>
       <button id="saveFavBtn" disabled>Save as Favorite</button>
-    </div>
-  </section>
+    </section>
 
-  <section id="favorites">
-    <h3>Favorites</h3>
-    <ul id="favList"></ul>
-  </section>
+    <!-- Live map -->
+    <div id="map"></div>
 
-  <p class="footnote">Built privately by Dailson for personal use.</p>
-</main>
+    <section class="favorites">
+      <h3>Favorites</h3>
+      <ul id="favsList" class="list"></ul>
+    </section>
 
     <footer>
-        <p>Built privately by Dailson for personal use.</p>
+      <small>Built privately by Dailson for personal use.</small>
     </footer>
+  </main>
 
-    <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
-
 </html>
