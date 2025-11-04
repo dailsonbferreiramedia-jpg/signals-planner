@@ -1,98 +1,90 @@
-// --- tiny offline "street knowledge" you can edit ---
-// rating: higher = better for signals / fewer 4-way stops
-// turnsPenalty: higher = more awkward turns to avoid
-const STREETS = [
-  { name: "E Cottage St", rating: 9, turnsPenalty: 2, notes: "Mostly signals; good flow" },
-  { name: "Batchelder St", rating: 8, turnsPenalty: 2, notes: "Residential but straightforward" },
-  { name: "Robey St", rating: 3, turnsPenalty: 6, notes: "Dead end; avoid for through travel" },
-  { name: "Clifton St", rating: 6, turnsPenalty: 3, notes: "OK; some parking lot traffic" },
-  // add/edit as you learn more:
-  // { name: "YOUR STREET", rating: 7, turnsPenalty: 3, notes: "your notes" },
-];
+// --- Platform helpers
+function getSelectedApp() {
+  const el = document.querySelector('input[name="navapp"]:checked');
+  return el ? el.value : 'auto';
+}
+const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+const isAndroid = /Android/.test(navigator.userAgent);
 
-function scoreRoute(preferLights, avoidTurns) {
-  // very simple scoring: rank highest-rated streets, subtract turn penalties if asked
-  return [...STREETS]
-    .map(s => ({
-      ...s,
-      score: s.rating - (avoidTurns ? s.turnsPenalty : 0)
-    }))
-    .sort((a, b) => b.score - a.score);
-}
-
-// Local favorites
-function loadFavs() {
-  try { return JSON.parse(localStorage.getItem("signalsFavs") || "[]"); }
-  catch { return []; }
-}
-function saveFavs(list) {
-  localStorage.setItem("signalsFavs", JSON.stringify(list));
-}
-function renderFavs() {
-  const ul = document.getElementById("favList");
-  ul.innerHTML = "";
-  const favs = loadFavs();
-  if (favs.length === 0) {
-    ul.innerHTML = "<li>No favorites yet.</li>";
-    return;
-  }
-  favs.forEach((f, idx) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<span><strong>${f.start}</strong> → <strong>${f.dest}</strong> (${f.choice})</span>`;
-    const del = document.createElement("button");
-    del.textContent = "Remove";
-    del.onclick = () => {
-      const cur = loadFavs();
-      cur.splice(idx, 1);
-      saveFavs(cur);
-      renderFavs();
-    };
-    li.appendChild(del);
-    ul.appendChild(li);
+// --- Build deep-link URLs
+function googleUrl(originLatLng, destination) {
+  const base = 'https://www.google.com/maps/dir/?api=1';
+  const params = new URLSearchParams({
+    destination,
+    travelmode: 'driving',
+    dir_action: 'navigate'
   });
+  if (originLatLng) params.set('origin', originLatLng); // lat,lng
+  return `${base}&${params.toString()}`;
+}
+function appleUrl(destination, useCurrent = true) {
+  // saddr=Current%20Location lets Apple Maps read device GPS
+  const saddr = useCurrent ? 'Current%20Location' : '';
+  return `https://maps.apple.com/?saddr=${saddr}&daddr=${encodeURIComponent(destination)}&dirflg=d`;
+}
+function wazeUrl(destination) {
+  // Waze can accept a query and navigate
+  return `https://waze.com/ul?q=${encodeURIComponent(destination)}&navigate=yes`;
 }
 
-function plan() {
-  const start = document.getElementById("start").value.trim();
-  const dest = document.getElementById("destination").value.trim();
-  const preferLights = document.getElementById("preferLights").checked;
-  const avoidTurns = document.getElementById("avoidTurns").checked;
-
-  const out = document.getElementById("output");
-  const saveBtn = document.getElementById("saveFavBtn");
-
-  if (!start || !dest) {
-    out.textContent = "Please enter Start and Destination.";
-    saveBtn.disabled = true;
+// --- Open the chosen app with best effort
+function openNavAppWith(originLatLng, destination) {
+  const choice = getSelectedApp();
+  if (choice === 'google') {
+    window.location.href = googleUrl(originLatLng, destination);
     return;
   }
-
-  const ranked = scoreRoute(preferLights, avoidTurns);
-  const best = ranked[0];
-  const alt = ranked[1];
-
-  out.innerHTML = `
-    <div><strong>Best pick:</strong> ${best.name} — score ${best.score} (${best.notes})</div>
-    ${alt ? `<div><strong>Backup:</strong> ${alt.name} — score ${alt.score} (${alt.notes})</div>` : ""}
-    <div style="margin-top:8px;font-size:0.95em;color:#666">
-      *This is an offline filter — edit <code>script.js</code> to tune the street list and notes.
-    </div>
-  `;
-
-  // enable saving
-  saveBtn.disabled = false;
-  saveBtn.onclick = () => {
-    const favs = loadFavs();
-    favs.unshift({ start, dest, choice: best.name, ts: Date.now() });
-    saveFavs(favs.slice(0, 20)); // keep last 20
-    renderFavs();
-    saveBtn.disabled = true;
-  };
+  if (choice === 'apple') {
+    window.location.href = appleUrl(destination, true);
+    return;
+  }
+  if (choice === 'waze') {
+    window.location.href = wazeUrl(destination);
+    return;
+  }
+  // Auto: pick the best default for the device
+  if (isiOS) {
+    window.location.href = appleUrl(destination, true);
+  } else {
+    window.location.href = googleUrl(originLatLng, destination);
+  }
 }
 
-function init() {
-  document.getElementById("planBtn").addEventListener("click", plan);
-  renderFavs();
+// --- Geolocate then open
+function goWithMyLocation() {
+  const dest = document.getElementById('destination').value.trim();
+  if (!dest) {
+    alert('Enter a destination first.');
+    return;
+  }
+  if (!('geolocation' in navigator)) {
+    // No GPS in browser: let app figure it out
+    openNavAppWith(null, dest);
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords;
+      const ll = `${latitude},${longitude}`;
+      openNavAppWith(ll, dest);
+    },
+    (_err) => {
+      // Permission denied or error: still try without origin; apps use device GPS
+      openNavAppWith(null, dest);
+    },
+    { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+  );
 }
 
-document.addEventListener("DOMContentLoaded", init);
+// --- Hook up buttons (keep your existing init() if you have one)
+function initNavButtons() {
+  const go = document.getElementById('goBtn');
+  if (go) go.addEventListener('click', goWithMyLocation);
+}
+
+// If you already have an init() in this file, just call initNavButtons() inside it.
+// If not, uncomment below:
+// document.addEventListener('DOMContentLoaded', initNavButtons);
+initNavButtons();
+
+
