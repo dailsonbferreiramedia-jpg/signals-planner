@@ -16,15 +16,32 @@
   <section id="route-form">
     <h2>Find Safer Routes</h2>
 
-    <div class="row">
-      <label for="start">Start:</label>
-      <input type="text" id="start" placeholder="Enter starting point" />
-    </div>
+<div class="controls">
+  <label>Start Location:</label>
+  <input id="start" placeholder="Enter starting point (or leave blank to use GPS)" />
+  <label>Destination:</label>
+  <input id="destination" placeholder="Enter destination" />
+  <label><input type="checkbox" id="preferlights" /> Prefer traffic lights / avoid 4-way stops</label>
+  <label><input type="checkbox" id="avoidturns" /> Minimize left turns</label>
+  <button id="planBtn">Plan My Route</button>
 
-    <div class="row">
-      <label for="destination">Destination:</label>
-      <input type="text" id="destination" placeholder="Enter destination" />
-    </div>
+  <!-- NEW: choose nav app + live navigation -->
+  <div class="nav-app" style="margin-top:10px;">
+    <strong>Open in:</strong>
+    <label><input type="radio" name="navapp" value="auto" checked> Auto</label>
+    <label><input type="radio" name="navapp" value="google"> Google Maps</label>
+    <label><input type="radio" name="navapp" value="apple"> Apple Maps</label>
+    <label><input type="radio" name="navapp" value="waze"> Waze</label>
+    <button id="goBtn">Use my location & open navigation</button>
+  </div>
+</div>
+
+<div id="output" class="card"></div>
+<div id="favs" class="card">
+  <h3>Favorites</h3>
+  <ul id="favList"></ul>
+</div>
+
 
     <div class="row inline">
       <label class="chk">
@@ -63,4 +80,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
