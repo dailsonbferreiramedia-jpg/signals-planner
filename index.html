@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signals Planner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🚦 Signals Planner</h1>
+        <p>Your personal map filter for safer, smoother driving.</p>
+    </header>
+
+    <main>
+  <section id="route-form">
+    <h2>Find Safer Routes</h2>
+
+    <div class="row">
+      <label for="start">Start:</label>
+      <input type="text" id="start" placeholder="Enter starting point" />
+    </div>
+
+    <div class="row">
+      <label for="destination">Destination:</label>
+      <input type="text" id="destination" placeholder="Enter destination" />
+    </div>
+
+    <div class="row inline">
+      <label class="chk">
+        <input type="checkbox" id="preferLights" />
+        Prefer traffic lights / avoid 4-way stops
+      </label>
+      <label class="chk">
+        <input type="checkbox" id="avoidTurns" />
+        Minimize left turns
+      </label>
+    </div>
+
+    <button id="planBtn">Plan My Route</button>
+  </section>
+
+  <section id="results">
+    <h3>Suggested Route</h3>
+    <div id="output">Enter a start and destination, then click “Plan My Route.”</div>
+
+    <div class="actions">
+      <button id="saveFavBtn" disabled>Save as Favorite</button>
+    </div>
+  </section>
+
+  <section id="favorites">
+    <h3>Favorites</h3>
+    <ul id="favList"></ul>
+  </section>
+
+  <p class="footnote">Built privately by Dailson for personal use.</p>
+</main>
+
+    <footer>
+        <p>Built privately by Dailson for personal use.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
